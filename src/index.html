@@ -96,6 +96,22 @@
   .uptime-bar-container::-webkit-scrollbar-track{background:#222}
 
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  footer { color:#cfcfcf; } /* body text in footer */
+  footer a{
+    color:#bfe0ff;             /* light blue ~AA on #121212 */
+    text-underline-offset: 2px;
+    text-decoration-thickness: 2px;
+    text-decoration: underline;
+    font-weight:600;
+  }
+  footer a:focus-visible,
+  footer a:hover{
+    color:#ffffff;              /* maximum contrast on interaction */
+    outline: 2px solid #90caf9; /* matches your global focus style */
+    outline-offset: 2px;
+  }
+  
 </style>
 </head>
 <body>
