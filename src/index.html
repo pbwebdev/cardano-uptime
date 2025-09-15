@@ -107,7 +107,8 @@
 
 <div class="alert" role="status" aria-live="polite">
   <h2>Cardano Mainnet</h2>
-  <p><strong>All systems operational.</strong></p>
+  <p><strong>All systems operational.</strong> *NOTE: We are limited in our ability to poll
+  on chain stats due to limitations. We poll the chain every minute.</p>
 </div>
 
 <div class="section" aria-label="About">
@@ -462,7 +463,7 @@
   function tick(){ paintSince(); paintEpoch(); paintLast(); }
 
   // Polling every 60s
-  const POLL_MS = 60000;
+  const POLL_MS = 10000;
   let pollTimer = null;
   function startPolling(){ stopPolling(); tick(); pull(); pollTimer = setInterval(pull, POLL_MS); }
   function stopPolling(){ if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
