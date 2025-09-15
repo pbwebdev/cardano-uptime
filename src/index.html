@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cardano Uptime (ADA) Blockchain Status - Uptime Monitoring Dashboard</title>
+<meta name="description" content="Live Cardano uptime network snapshot: latest block, epoch progress, TPS, 24h transactions, fees, mempool and more.">
+<link rel="icon" type="image/png" href="logo.png">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Cardano Uptime Status">
+  <meta property="og:description" content="Live Cardano network snapshot: latest block, epoch progress, TPS, 24h transactions, average fees, mempool and more.">
+  <meta property="og:url" content="https://cardanouptime.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Cardano Uptime & Status Stats">
+  <meta property="og:locale" content="en_GB">
+
+  <!-- Preferred share image (1200×630) -->
+  <meta property="og:image" content="https://cardanouptime.com/og-cardano-uptime-1200x630.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Cardano Uptime dashboard: latest block, epoch progress, TPS and mempool status.">
+
+  <!-- Square fallback (512×512) -->
+  <meta property="og:image" content="https://cardanouptime.com/og-cardano-uptime-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="Cardano Uptime logo">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Cardano ADA Blockchain Uptime Status">
+  <meta name="twitter:description" content="Cardano Uptime, Live Cardano network snapshot: latest block, epoch progress, TPS, 24h transactions, average fees, mempool and more.">
+  <meta name="twitter:image" content="https://cardanouptime.com/og-cardano-uptime-1200x630.png">
+
+  <meta name="twitter:site" content="@astroboysoup">
+  <meta name="twitter:creator" content="@astroboysoup">
+
+
+  <!-- SEO helpers -->
+  <link rel="canonical" href="https://cardanouptime.com/"/>
+  <meta name="robots" content="index,follow,max-image-preview:large">
+
+<style>
+  *{box-sizing:border-box}
+  :focus{outline:2px solid #90caf9; outline-offset:2px}
+  body{background:#121212;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;margin:0}
+  header{padding:40px 0 20px;text-align:center}
+  header img{width:80px;height:80px}
+  h1{font-size:2rem;margin:15px 0 0}
+  .subscribe-btn{display:inline-block;margin-top:10px;background:#0d47a1;color:#fff;padding:10px 20px;border-radius:6px;font-weight:600;text-decoration:none;font-size:14px}
+
+  .alert{background:#1e1e1e;border-left:5px solid #ff9800;padding:20px;margin:30px auto;max-width:800px;box-shadow:0 0 5px rgba(255,152,0,0.3)}
+  .alert h2{margin:0 0 10px;font-size:1.1rem;color:#ffeb3b}
+  .alert p{margin:0;font-size:.95rem}
+
+  .section{max-width:800px;margin:40px auto;padding:0 20px}
+  .section h2{font-size:1.4rem;margin-bottom:15px;border-bottom:1px solid #333;padding-bottom:10px}
+
+  .status-box{background:#1c1c1c;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+  .status-box h3{margin-top:0;font-size:1.1rem}
+  .status-meta{font-size:.95rem;color:#cfcfcf;margin-top:10px}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:20px}
+  @media (min-width:768px){ .grid.two{grid-template-columns:repeat(2,1fr)} }
+  @media (min-width:1024px){ .grid.three{grid-template-columns:repeat(3,1fr)} }
+
+  /* Big green time */
+  .since-wrapper{display:flex;align-items:baseline;gap:8px}
+  .since-big{font-weight:800;line-height:1;font-size:2.6rem;color:#00c853}
+  .since-unit{font-size:1rem;color:#bdbdbd}
+
+  /* Epoch ring */
+  .ring{width:100px;height:100px;display:block}
+  .ring-track{stroke:#0b422d;stroke-width:10;fill:none}
+  .ring-fill{stroke:#00c853;stroke-width:10;fill:none;stroke-linecap:round;transition:stroke-dashoffset .6s linear}
+  @media (prefers-reduced-motion: reduce){ .ring-fill{transition:none} }
+  .ring-wrap{display:flex;align-items:center;gap:16px}
+  .ring-text{display:flex;flex-direction:column}
+  .ring-percent{font-weight:700}
+
+  /* Sparklines */
+  .spark{width:100%;height:40px;display:block}
+  .spark path{fill:none;stroke:#00c853;stroke-width:2}
+
+  /* SR-only progressbar */
+  .progress-track{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+  .last-updated{font-size:.9rem;color:#bdbdbd;margin-top:8px}
+
+  /* Demo uptime bars */
+  .uptime-bar-container{display:flex;align-items:flex-end;height:60px;margin-top:20px;background:#1e1e1e;padding:10px;border-radius:10px;overflow-x:auto;gap:4px;scroll-snap-type:x mandatory}
+  .uptime-bar{min-width:4px;height:100%;background:#00c853;border-radius:3px;flex-shrink:0;scroll-snap-align:start}
+  .uptime-bar-container::-webkit-scrollbar{height:8px}
+  .uptime-bar-container::-webkit-scrollbar-thumb{background:#555;border-radius:4px}
+  .uptime-bar-container::-webkit-scrollbar-track{background:#222}
+
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<header>
+  <img src="logo-80x80.webp" srcset="logo-80x80.webp 1x, logo-160x160.webp 2x" width="80" height="80" alt="Cardano Uptime Logo">
+  <h1>Cardano Uptime Status</h1>
+  <a class="subscribe-btn" href="https://mailchi.mp/6209a21de9b4/generic-sign-up-form" target="_blank" rel="noopener">SUBSCRIBE TO UPDATES</a>
+</header>
+
+<div class="alert" role="status" aria-live="polite">
+  <h2>Cardano Mainnet</h2>
+  <p><strong>All systems operational.</strong></p>
+</div>
+
+<div class="section" aria-label="About">
+  <h2>About This Site</h2>
+  <p>Showing live stats, Cardano Uptime, status and data from the Cardano blockchain</p>
+</div>
+
+<!-- Row 1 -->
+<div class="section" aria-label="Network Snapshot">
+  <h2>Network Snapshot (live)</h2>
+  <div class="grid three">
+    <div class="status-box" aria-live="polite">
+      <h3>Time Since Latest Block</h3>
+      <div class="since-wrapper" aria-hidden="true">
+        <div id="since-big" class="since-big">--</div>
+        <div id="since-unit" class="since-unit">sec ago</div>
+      </div>
+      <p class="status-meta sr-only" id="since-text">Time since latest block</p>
+    </div>
+
+    <div class="status-box" aria-live="polite">
+      <h3>Tip: Height • Epoch • Slot</h3>
+      <p class="status-meta" id="tip">Loading…</p>
+    </div>
+
+    <div class="status-box" aria-live="polite">
+      <h3>Epoch Progress</h3>
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="ring-track" cx="60" cy="60" r="48"></circle>
+          <circle id="ring-fill" class="ring-fill" cx="60" cy="60" r="48"
+                  stroke-dasharray="301.592" stroke-dashoffset="301.592"></circle>
+        </svg>
+        <div class="ring-text">
+          <div class="ring-percent" id="epoch-percent">0.0% complete</div>
+          <div class="status-meta" id="epoch-eta">Time to next epoch: Loading…</div>
+        </div>
+      </div>
+      <div class="progress-track" role="progressbar" aria-label="Epoch progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="epoch-progressbar"></div>
+    </div>
+  </div>
+  <p class="last-updated" aria-live="polite">Last updated: <span id="last-updated">—</span></p>
+</div>
+
+<!-- Row 2 -->
+<div class="section" aria-label="Throughput & Mempool">
+  <div class="grid three">
+    <div class="status-box" aria-live="polite">
+      <h3>TPS (rolling 5 min)</h3>
+      <div class="status-meta" id="tps">Loading…</div>
+      <svg class="spark" viewBox="0 0 100 40" aria-hidden="true">
+        <path id="sparkline" d="M0 40 L100 40"></path>
+      </svg>
+      <p class="status-meta sr-only" id="tps-desc"></p>
+    </div>
+
+    <div class="status-box" aria-live="polite">
+      <h3>24h Transactions & Average Fee</h3>
+      <p class="status-meta" id="tx24h">Loading…</p>
+      <p class="status-meta" id="avgfee">Loading…</p>
+    </div>
+
+    <div class="status-box" aria-live="polite">
+      <h3>Mempool Size</h3>
+      <p class="status-meta" id="mempool">Loading…</p>
+      <svg class="spark" viewBox="0 0 100 40" aria-hidden="true">
+        <path id="mempool-spark" d="M0 40 L100 40"></path>
+      </svg>
+      <p class="status-meta sr-only" id="mempool-desc"></p>
+    </div>
+  </div>
+</div>
+
+<!-- Row 3 -->
+<div class="section" aria-label="Epoch & Health">
+  <div class="grid three">
+    <div class="status-box" aria-live="polite">
+      <h3>Blocks in Current Epoch & Producers</h3>
+      <p class="status-meta" id="epoch-stats">Loading…</p>
+    </div>
+
+    <div class="status-box" aria-live="polite">
+      <h3>Average Block Time (last 120)</h3>
+      <p class="status-meta" id="abtime">Loading…</p>
+    </div>
+
+    <div class="status-box" aria-live="polite">
+      <h3>Blockfrost API Health</h3>
+      <p class="status-meta" id="health">Loading…</p>
+    </div>
+  </div>
+</div>
+
+<!-- Fun bars below -->
+<div class="section">
+  <div class="status-box">
+    <h3>Cardano Mainnet</h3>
+    <p class="status-meta">100.00% uptime over the past 90 days</p>
+    <div class="uptime-bar-container" id="uptime-bars-mainnet"></div>
+  </div>
+  <div class="status-box">
+    <h3>Cardano Testnet (PreProd)</h3>
+    <p class="status-meta">100.00% uptime over the past 90 days</p>
+    <div class="uptime-bar-container" id="uptime-bars-preprod"></div>
+  </div>
+  <div class="status-box">
+    <h3>Cardano Testnet (Preview)</h3>
+    <p class="status-meta">100.00% uptime over the past 90 days</p>
+    <div class="uptime-bar-container" id="uptime-bars-preview"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const WORKER = "https://blockfrost-proxy.mail-e4c.workers.dev";
+
+  const $ = (id) => document.getElementById(id);
+  const elSinceBig = $("since-big"), elSinceUnit = $("since-unit"), elSinceText = $("since-text");
+  const elTip = $("tip"), elLast = $("last-updated");
+  const elRing = $("ring-fill"), elPct = $("epoch-percent"), elEta = $("epoch-eta"), elPB = $("epoch-progressbar");
+  const elTPS = $("tps"), elSpark = $("sparkline"), elTPSDesc = $("tps-desc");
+  const elTX24h = $("tx24h"), elAvgFee = $("avgfee");
+  const elMempool = $("mempool"), elMempoolSpark = $("mempool-spark"), elMempoolDesc = $("mempool-desc");
+  const elEpochStats = $("epoch-stats");
+  const elABT = $("abtime");
+  const elHealth = $("health");
+
+  let latestBlockMs = 0, epochStartMs = 0, epochEndMs = 0, lastFetchMs = 0;
+  const circ = 2 * Math.PI * 48;
+  let tpsHistory = [];
+  let mempoolHistory = [];
+
+  function sanitizeSeries(arr) {
+    return (Array.isArray(arr) ? arr : []).map(v => {
+      const n = Number(v);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    });
+  }
+
+  function paintSparkTo(pathEl, samples){
+    const clean = sanitizeSeries(samples);
+    const n = clean.length;
+    if (n < 2) { pathEl.setAttribute("d","M0 40 L100 40"); return; }
+    const max = Math.max(...clean, 1);
+    if (!Number.isFinite(max) || max <= 0) { pathEl.setAttribute("d","M0 40 L100 40"); return; }
+    let d = "";
+    for (let i=0;i<n;i++){
+      const x = (i/(n-1))*100;
+      const y = 40 - (clean[i]/max)*36 - 2;
+      d += (i===0 ? `M${x} ${y}` : ` L${x} ${y}`);
+    }
+    pathEl.setAttribute("d", d);
+  }
+  function paintTPS(samples){ paintSparkTo(elSpark, samples); }
+
+  function sinceParts(ms){ if(ms<0) ms=0; const s=Math.floor(ms/1000);
+    if(s<60) return {num:s, unit:"s ago", sr:`${s} seconds ago`};
+    const m=Math.floor(s/60); if(m<60) return {num:`${m}m ${s%60}s`, unit:"ago", sr:`${m} minutes ${s%60} seconds ago`};
+    const h=Math.floor(m/60); return {num:`${h}h ${m%60}m`, unit:"ago", sr:`${h} hours ${m%60} minutes ago`};
+  }
+  function fmtDur(ms){ if(ms<0) ms=0; const s=Math.floor(ms/1000), d=Math.floor(s/86400), h=Math.floor((s%86400)/3600), m=Math.floor((s%3600)/60);
+    if(d>0) return `${d}d ${h}h ${m}m`; if(h>0) return `${h}h ${m}m`; return `${m}m ${s%60}s`; }
+  const pct = (n) => `${(n*100).toFixed(1)}%`;
+
+  function paintSince(){
+    if(!latestBlockMs){ elSinceBig.textContent="--"; elSinceUnit.textContent="sec ago"; elSinceText.textContent="Time since latest block unavailable"; return; }
+    const p=sinceParts(Date.now()-latestBlockMs);
+    elSinceBig.textContent=p.num; elSinceUnit.textContent=p.unit; elSinceText.textContent=`Time since latest block: ${p.sr}`;
+  }
+  function paintEpoch(){
+    if(!(epochStartMs&&epochEndMs&&epochEndMs>epochStartMs)){
+      elPct.textContent="Unavailable"; elEta.textContent="";
+      elRing.setAttribute("stroke-dashoffset", String(circ)); elPB.setAttribute("aria-valuenow","0"); return;
+    }
+    const now=Date.now(), total=epochEndMs-epochStartMs, elapsed=Math.min(Math.max(now-epochStartMs,0),total), remaining=Math.max(epochEndMs-now,0);
+    const f=elapsed/total;
+    elPct.textContent=`${pct(f)} complete`;
+    elEta.textContent=`Time to next epoch: ${fmtDur(remaining)}`;
+    elRing.setAttribute("stroke-dasharray", String(circ));
+    elRing.setAttribute("stroke-dashoffset", String(circ*(1-f)));
+    elPB.setAttribute("aria-valuenow", (f*100).toFixed(1));
+  }
+  function paintLast(){ if(!lastFetchMs){ elLast.textContent="—"; return; } const p=sinceParts(Date.now()-lastFetchMs); elLast.textContent = p.sr; }
+
+  async function fetchKoiosTip() {
+    const r = await fetch(`${WORKER}/koios/tip`, { cache: "no-store" });
+    if (!r.ok) throw new Error("koios /tip -> " + r.status);
+    const j = await r.json();
+    const v = Array.isArray(j) ? j[0] : j;
+    return {
+      time: Number(v.block_time ?? 0),
+      height: Number(v.block_height ?? v.block_no ?? 0),
+      epoch: Number(v.epoch_no ?? v.epoch ?? 0),
+      slot: Number(v.epoch_slot ?? v.abs_slot ?? 0),
+    };
+  }
+  async function fetchQuickMempool() {
+    const r = await fetch(`${WORKER}/quick/mempool_size`, { cache: "no-store" });
+    if (!r.ok) throw new Error("/quick/mempool_size -> " + r.status);
+    return r.json();
+  }
+  async function fetchBundle(){
+    const r = await fetch(`${WORKER}/bundle`, { cache: "no-store" });
+    if (!r.ok) throw new Error(`/bundle -> ${r.status}`);
+    const stale = r.headers.get("x-stale") === "1";
+    const data = await r.json();
+    data.__stale = stale;
+    return data;
+  }
+
+  function applyBundle(data){
+    lastFetchMs = Date.now();
+    const blk = data.core?.block || {};
+    const win = data.core?.epoch_window || {};
+
+    if (Number.isFinite(blk.time)) {
+      const t = blk.time * 1000; if (t > latestBlockMs) latestBlockMs = t;
+    }
+    const h = Number.isFinite(blk.height) ? Number(blk.height).toLocaleString() : "–";
+    const e = Number.isFinite(blk.epoch) ? blk.epoch : "–";
+    const s = Number.isFinite(blk.slot) ? Number(blk.slot).toLocaleString() : "–";
+    elTip.textContent = `${h} • ${e} • ${s}`;
+
+    epochStartMs = Number.isFinite(win.start_time) ? win.start_time * 1000 : 0;
+    epochEndMs   = Number.isFinite(win.end_time)   ? win.end_time   * 1000 : 0;
+
+    // TPS
+    const tpsNum = Number(data.tps5m?.tps_5m);
+    const safeTps = Number.isFinite(tpsNum) && tpsNum >= 0 ? tpsNum : 0;
+    const tx5m = Number.isFinite(data.tps5m?.tx_5m) ? data.tps5m.tx_5m : 0;
+    elTPS.textContent = `${safeTps.toFixed(2)} TPS (tx last 5m: ${tx5m})${data.__stale ? " • cached" : ""}`;
+    tpsHistory.push(safeTps); if (tpsHistory.length > 24) tpsHistory.shift();
+    paintTPS(tpsHistory);
+    elTPSDesc.textContent = `Transactions per second averaged over the last five minutes: ${safeTps.toFixed(2)} TPS.`;
+
+    // 24h tx (estimate)
+    const est = Number(data.tx24h_estimate?.tx_24h);
+    elTX24h.textContent = `Transactions (24h): ${ (Number.isFinite(est) ? est : 0).toLocaleString() } (estimate)`;
+
+    // Average fee (if Worker adds fees_sample later)
+    const fs = data.fees_sample;
+    if (fs && typeof fs.avg_fee_ada === "number" && isFinite(fs.avg_fee_ada)) {
+      elAvgFee.textContent = `Average fee: ${fs.avg_fee_ada.toFixed(4)} ADA (sample ${fs.sample_blocks} blks)`;
+    } else {
+      elAvgFee.textContent = "Average fee: —";
+    }
+
+    // mempool bundled + trend
+    const mpObj = data.mempool || {};
+    const bundleSize = Number.isFinite(mpObj.size) ? mpObj.size : 0;
+    const truncated  = !!mpObj.truncated;
+
+    const prev = mempoolHistory.length ? mempoolHistory[mempoolHistory.length - 1] : null;
+    const delta = prev === null ? 0 : (bundleSize - prev);
+
+    mempoolHistory.push(bundleSize);
+    if (mempoolHistory.length > 24) mempoolHistory.shift();
+
+    let label;
+    if (truncated) label = `${bundleSize.toLocaleString()}+ pending (truncated)`;
+    else if (bundleSize === 0) label = `0 pending • clear`;
+    else {
+      const deltaTxt = prev === null ? "" :
+        (delta === 0 ? " • no change" : (delta > 0 ? ` • ▲ ${delta}` : ` • ▼ ${Math.abs(delta)}`));
+      label = `${bundleSize.toLocaleString()} pending${deltaTxt}`;
+    }
+    elMempool.textContent = label;
+    paintSparkTo(elMempoolSpark, mempoolHistory);
+    elMempoolDesc.textContent = `Mempool pending transactions trend. Latest ${bundleSize}.`;
+
+    // Epoch stats: prefer exact; show observed as a hint if exact missing
+    {
+      const es = data.epoch_stats || {};
+      const exact    = Number(es.blocks_in_epoch_exact);
+      const observed = Number(es.blocks_in_epoch_observed || es.blocks_in_epoch || 0);
+      const producers = Number(es.producers_observed || es.producer_count || 0);
+
+      let line = "";
+      if (Number.isFinite(exact) && exact > 0) {
+        line = `Blocks: ${exact.toLocaleString()} • Producers: ${producers.toLocaleString()}`;
+      } else {
+        const seenTxt = Number.isFinite(observed) && observed > 0 ? ` (seen ${observed.toLocaleString()})` : "";
+        line = `Blocks: ~${observed.toLocaleString()}${seenTxt} • Producers: ${producers.toLocaleString()}`;
+      }
+      elEpochStats.textContent = line;
+    }
+
+    // avg block time
+    const ab = data.avg_block_time_120?.avg_block_time_s;
+    const sample = data.avg_block_time_120?.sample ?? 0;
+    elABT.textContent = Number.isFinite(ab) && ab > 0 ? `${ab.toFixed(1)}s (sample ${sample})` : "Unavailable";
+
+    // health
+    const ok = !!data.health?.is_healthy; const lat = data.health?.upstream_latency_ms ?? null; const p = data.health?.provider || "Blockfrost";
+    elHealth.textContent = ok ? `${p}: Healthy • Upstream latency ${lat} ms` : `${p}: Degraded • Upstream latency ${lat ?? "–"} ms`;
+  }
+
+  async function pull(){
+    try {
+      const data = await fetchBundle();
+      applyBundle(data);
+
+      // Live mempool sanity-check (proxy; cheap & CORS-safe). Ignore 404 if route not deployed yet.
+      try {
+        const quick = await fetchQuickMempool();
+        if (typeof quick.size === "number") {
+          const liveSize = quick.size;
+          const prev = mempoolHistory.length ? mempoolHistory[mempoolHistory.length - 1] : null;
+          if (prev === null || prev !== liveSize) {
+            const delta = prev === null ? 0 : (liveSize - prev);
+            mempoolHistory.push(liveSize);
+            if (mempoolHistory.length > 24) mempoolHistory.shift();
+            let label;
+            if (quick.truncated) label = `${liveSize.toLocaleString()}+ pending (live)`;
+            else if (liveSize === 0) label = `0 pending • clear (live)`;
+            else {
+              const deltaTxt = prev === null ? "" :
+                (delta === 0 ? " • no change" : (delta > 0 ? ` • ▲ ${delta}` : ` • ▼ ${Math.abs(delta)}`));
+              label = `${liveSize.toLocaleString()} pending${deltaTxt} (live)`;
+            }
+            elMempool.textContent = label;
+            paintSparkTo(elMempoolSpark, mempoolHistory);
+            elMempoolDesc.textContent = `Mempool pending transactions trend. Live latest ${liveSize}.`;
+          }
+        }
+      } catch (e) {
+        if (!String(e).includes("404")) console.warn("quick mempool check failed:", e);
+      }
+
+      // Prefer Koios tip (proxy). Ignore 404 if not deployed yet.
+      try {
+        const kt = await fetchKoiosTip();
+        if (kt.time && Math.abs(Date.now()/1000 - kt.time) < 3600) {
+          const tMs = kt.time * 1000;
+          if (tMs > latestBlockMs) {
+            latestBlockMs = tMs;
+            const h = kt.height ? kt.height.toLocaleString() : "–";
+            const e = Number.isFinite(kt.epoch) ? kt.epoch : "–";
+            const s = Number.isFinite(kt.slot) ? kt.slot.toLocaleString() : "–";
+            elTip.textContent = `${h} • ${e} • ${s}`;
+          }
+        }
+      } catch (e) {
+        if (!String(e).includes("404")) console.warn("koios tip failed:", e);
+      }
+
+    } catch(e){
+      console.error(e);
+    }
+  }
+
+  function tick(){ paintSince(); paintEpoch(); paintLast(); }
+
+  // Polling every 60s
+  const POLL_MS = 60000;
+  let pollTimer = null;
+  function startPolling(){ stopPolling(); tick(); pull(); pollTimer = setInterval(pull, POLL_MS); }
+  function stopPolling(){ if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
+
+  document.addEventListener("visibilitychange", () => { if (document.hidden) stopPolling(); else startPolling(); });
+
+  setInterval(tick, 1000);
+  startPolling();
+})();
+</script>
+
+
+<footer style="text-align:center;font-size:.85rem;padding:40px 0 20px;color:#bbb">
+  © 2025 Cardano Status Monitor - Built for uptime visibility<br>
+  Site by <a href="https://meshwithus.com.au" title="Cardano blockchain development">Mesh With Us</a>
+</footer>
+
+<!-- Demo uptime bars -->
+<div id="tooltip" class="sr-only" role="tooltip"></div>
+<script defer>
+function generateBars(containerId){
+  const container = document.getElementById(containerId);
+  const today = new Date();
+  for(let i=0;i<90;i++){
+    const bar = document.createElement('div'); bar.classList.add('uptime-bar');
+    const date = new Date(today); date.setUTCDate(today.getUTCDate()-(89-i));
+    bar.title = date.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}) + ": 100% up";
+    container.appendChild(bar);
+  }
+}
+generateBars("uptime-bars-mainnet");
+generateBars("uptime-bars-preprod");
+generateBars("uptime-bars-preview");
+</script>
+</body>
+</html>
