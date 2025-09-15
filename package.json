@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "build:html": "node scripts/minify-html.mjs",
+    "build": "npm run build:html"
+  },
+  "devDependencies": {
+    "html-minifier-terser": "^7.2.0"
+  }
+}
