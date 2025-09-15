@@ -498,21 +498,83 @@
 </footer>
 
 <!-- Demo uptime bars -->
-<div id="tooltip" class="sr-only" role="tooltip"></div>
+<div
+        id="tooltip"
+        role="tooltip"
+        class="sr-only"
+        aria-label="Uptime bar day detail"
+        aria-live="polite"
+        aria-atomic="true"
+        aria-hidden="true">
+</div>
 <script defer>
-function generateBars(containerId){
-  const container = document.getElementById(containerId);
-  const today = new Date();
-  for(let i=0;i<90;i++){
-    const bar = document.createElement('div'); bar.classList.add('uptime-bar');
-    const date = new Date(today); date.setUTCDate(today.getUTCDate()-(89-i));
-    bar.title = date.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}) + ": 100% up";
-    container.appendChild(bar);
-  }
-}
-generateBars("uptime-bars-mainnet");
-generateBars("uptime-bars-preprod");
-generateBars("uptime-bars-preview");
+  (function () {
+    const tipEl = document.getElementById('tooltip');
+
+    function labelFor(date, pct = 100) {
+      // e.g., "14 Sep 2025: 100% up"
+      const d = date.toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'
+      });
+      return `${d}: ${pct}% up`;
+    }
+
+    function showTip(text) {
+      if (!tipEl) return;
+      tipEl.textContent = text;
+      tipEl.setAttribute('aria-hidden', 'false');
+      tipEl.classList.remove('sr-only');     // remove if you want it visually hidden only
+    }
+
+    function hideTip() {
+      if (!tipEl) return;
+      tipEl.classList.add('sr-only');
+      tipEl.setAttribute('aria-hidden', 'true');
+    }
+
+    function wireBar(bar, text) {
+      // Keep the native mouse tooltip
+      bar.title = text;
+
+      // Screen reader + keyboard
+      bar.setAttribute('role', 'img');
+      bar.setAttribute('aria-label', text);
+      bar.setAttribute('aria-describedby', 'tooltip');
+      bar.tabIndex = 0;
+
+      // Update the live tooltip on hover/focus
+      bar.addEventListener('mouseenter', () => showTip(text));
+      bar.addEventListener('mouseleave', hideTip);
+      bar.addEventListener('focus',     () => showTip(text));
+      bar.addEventListener('blur',      hideTip);
+    }
+
+    function generateBars(containerId){
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      const today = new Date();
+      for (let i = 0; i < 90; i++) {
+        const bar = document.createElement('div');
+        bar.classList.add('uptime-bar');
+
+        // Date for this bar (oldest → newest)
+        const date = new Date(today);
+        date.setUTCDate(today.getUTCDate() - (89 - i));
+
+        // If you later track real percentages, replace 100 with the real value
+        const text = labelFor(date, 100);
+
+        wireBar(bar, text);
+        container.appendChild(bar);
+      }
+    }
+
+    generateBars("uptime-bars-mainnet");
+    generateBars("uptime-bars-preprod");
+    generateBars("uptime-bars-preview");
+  })();
 </script>
+
 </body>
 </html>
